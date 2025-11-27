@@ -1,0 +1,43 @@
+/* * assets/css/logo.css 
+ * Digunakan untuk mengatur gaya logo toko di halaman login admin.
+ */
+
+/* * Aturan default untuk Desktop dan Tablet (Layar Besar)
+ * Ini menargetkan elemen gambar <img> 
+ * yang berada di dalam div dengan kelas .card-header-modern.
+ */
+.card-header-modern img {
+    /* Atur lebar dan tinggi sesuai ukuran yang diinginkan untuk Desktop/Default */
+    width: 150px; 
+    height: 150px;
+    
+    /* Atur margin bawah agar ada ruang antara logo dan teks */
+    margin-bottom: 15px; /* Sedikit ditingkatkan agar lebih rapi */
+    
+    /* Tambahkan transisi agar perubahan ukuran terlihat halus */
+    transition: width 0.3s ease, height 0.3s ease, margin 0.3s ease;
+}
+
+/* ==================================================================== */
+/* 🔥 MEDIA QUERY UNTUK RESPONSIVITAS MOBILE (Maksimal Lebar 767.98px) 🔥 */
+/* ==================================================================== */
+@media (max-width: 767.98px) {
+    
+    .card-header-modern img {
+        /* Ukuran diperkecil untuk Mobile agar tidak memakan banyak ruang */
+        width: 100px; /* Ukuran yang lebih kecil untuk ponsel */
+        height: 100px;
+        
+        /* Kurangi margin untuk menghemat ruang vertikal */
+        margin-bottom: 10px; 
+    }
+}
+
+/* * Anda juga bisa menargetkan logo hanya dengan tag <img> 
+ * jika itu adalah satu-satunya gambar di halaman tersebut.
+ */
+/* img.d-block.mx-auto {
+    width: 80px;
+    height: 80px;
+}
+*/

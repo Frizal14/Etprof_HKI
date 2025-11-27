@@ -1,0 +1,155 @@
+/* style.css */
+
+/* ======================================= */
+/* --- STICKY FOOTER / FLEXBOX LAYOUT --- */
+/* ======================================= */
+
+/* WAJIB: Atur tinggi penuh dan Flexbox pada elemen utama */
+html, body {
+    height: 100%; 
+    margin: 0;
+}
+
+body {
+    display: flex; /* Aktifkan Flexbox pada body */
+    flex-direction: column; /* Tata item secara vertikal */
+    background-color: #f8f9fa; /* Light background for the whole page */
+    font-family: 'Arial', sans-serif;
+}
+
+#page-content {
+    /* Wajib: Membuat konten utama melar dan mendorong footer */
+    flex: 1 0 auto; 
+    /* Padding atas untuk memberi jarak dari Navbar */
+    padding-top: 20px; 
+}
+
+/* ======================================= */
+/* --- GENERAL & CONTAINER STYLING --- */
+/* ======================================= */
+
+.container {
+    /* Menghilangkan padding-top karena sudah ada di #page-content */
+    padding-top: 0; 
+}
+
+/* ======================================= */
+/* --- NAVBAR ADJUSTMENTS --- */
+/* ======================================= */
+
+.navbar {
+    border-bottom: 3px solid #007bff; /* Highlight primary brand color */
+}
+
+/* Style for the 'Halo, User!' text */
+.navbar .nav-link.text-dark {
+    font-weight: 600;
+    color: #343a40 !important;
+}
+
+/* ======================================= */
+/* --- PRODUCT CARD STYLING --- */
+/* ======================================= */
+
+.card {
+    border: none;
+    border-radius: 10px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    overflow: hidden; /* Ensures image corners are also rounded */
+}
+
+.card:hover {
+    transform: translateY(-5px); /* Lift effect on hover */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+    border-bottom: 1px solid #dee2e6; /* Separator for image and body */
+}
+
+.card-body {
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+}
+
+.card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #343a40;
+    margin-bottom: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap; /* Keep title on one line */
+}
+
+.card-text.text-danger {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+/* Keranjang Icon Badge Styling */
+.position-relative {
+    display: inline-flex;
+    align-items: center;
+}
+
+.badge.bg-danger {
+    font-size: 0.75rem;
+    padding: 0.4em 0.6em;
+}
+
+/* Utility for buttons */
+.btn-sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+}
+
+
+/* ======================================= */
+/* --- FOOTER STYLING --- */
+/* ======================================= */
+
+footer {
+    flex-shrink: 0; /* Mencegah footer menyusut */
+    width: 100%;
+    /* Styling warna dari class Bootstrap */
+    background-color: #212529 !important; 
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.social-links {
+    /* Memberi jarak yang lebih besar di bawah ikon */
+    margin-bottom: 1.5rem; 
+}
+
+.social-links a {
+    /* Mengatur ukuran ikon */
+    font-size: 1.8rem; 
+    transition: color 0.3s ease;
+}
+
+.social-links a:hover {
+    /* Efek hover saat mouse melewati ikon */
+    color: #007bff !important;
+}
+
+.social-links a:not(:last-child) {
+    /* Memastikan jarak antara ikon */
+    margin-right: 1.5rem !important; 
+}
+
+
+/* Mengoverride warna teks saat kursor diarahkan ke tombol Keranjang */
+.navbar .btn-outline-primary:hover {
+    color: #fff !important; 
+}
+
+/* Mengoverride warna teks saat kursor diarahkan ke tombol Logout */
+.navbar .btn-outline-danger:hover {
+    color: #fff !important; 
+}

@@ -1,0 +1,53 @@
+/* --- STYLING UNTUK BRAND DAN LOGO BARU --- */
+
+.navbar-brand.brand-logo-container {
+    display: flex; 
+    align-items: center; 
+    text-decoration: none;
+    padding: 0; 
+    margin: 0;
+    line-height: 1.1; 
+}
+
+.brand-logo {
+    /* PERBAIKAN SINTAKS: DARI '100px important' MENJADI '70px !important' */
+    /* 70px adalah ukuran yang sangat besar dan akan membuat logo terlihat dominan. */
+    height: 130px !important; 
+    width: auto;
+    margin-right: 15px; /* Jarak disesuaikan */
+    transition: transform 0.3s ease;
+}
+
+.brand-logo-container:hover .brand-logo {
+    transform: rotate(-5deg); 
+}
+
+.brand-name {
+    font-weight: 800; 
+    /* Ukuran font disesuaikan agar seimbang dengan logo 70px */
+    font-size: 2.5rem; 
+    color: #343a40; 
+    display: block; 
+}
+
+.brand-tagline {
+    font-size: 1.0rem; /* Lebih mudah dibaca */
+    font-weight: 600; 
+    color: #007bff; 
+    display: block; 
+    margin-top: -3px; 
+}
+
+/* Sesuaikan tampilan untuk perangkat kecil */
+@media (max-width: 768px) {
+    .brand-name {
+        font-size: 1.8rem; /* Lebih besar untuk mobile */
+    }
+    .brand-tagline {
+        font-size: 0.9rem;
+    }
+    .brand-logo {
+        /* PASTIKAN JUGA ADA !important UNTUK MOBILE */
+        height: 50px !important; 
+    }
+}
