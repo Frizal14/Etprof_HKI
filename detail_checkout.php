@@ -26,7 +26,6 @@ $user_id = $_SESSION['user_id'];
 $order_id = $_GET['order_id'] ?? null;
 if ($order_id) {
     // Sanitize input untuk keamanan (asumsi $koneksi ada dan merupakan mysqli)
-    // Walaupun is_numeric sudah ada di bawah, ini lebih aman untuk prevent SQLi pada get parameter
     $order_id = is_numeric($order_id) ? (int)$order_id : null; 
 }
 
@@ -64,8 +63,8 @@ if (!is_numeric($order_id) || $order_id <= 0) {
 // 2. Ambil Detail Pesanan dari tabel 'orders'
 // Menggunakan prepared statement untuk keamanan
 $sql_order = "SELECT id, total_amount, shipping_address, shipping_carrier, shipping_tracking_number, status, order_date, customer_name, customer_email, payment_method, payment_proof_path
-              FROM orders 
-              WHERE id = ? AND user_id = ?";
+             FROM orders 
+             WHERE id = ? AND user_id = ?";
              
 $stmt_order = $koneksi->prepare($sql_order);
 $stmt_order->bind_param("ii", $order_id, $user_id);
@@ -210,37 +209,45 @@ $payment_proof_url = 'uploads/payments/' . urlencode($order['payment_proof_path'
         /* Penyesuaian agar bank detail menjadi full-width di mobile */
         @media (max-width: 576px) {
              .bank-detail-card {
-                max-width: 100%; /* Full width di mobile */
+               max-width: 100%; /* Full width di mobile */
              }
         }
         .bank-detail-card strong.fs-5 {
             color: var(--bs-primary);
         }
 
-        /* 🚀 Perbaikan Responsivitas Mobile/Tab 🚀 */
+        /* 🚀 Perbaikan Responsivitas Mobile/Tab (Tabel Geser) 🚀 */
         /* Penyesuaian agar hero-section-detail bertumpuk di layar kecil */
         .hero-section-detail .col-md-6 {
             padding-left: calc(var(--bs-gutter-x) * .5);
             padding-right: calc(var(--bs-gutter-x) * .5);
         }
 
-        @media (max-width: 767.98px) { /* Maksimal layar di bawah md (mobile) */
+        @media (max-width: 767.98px) { /* Maksimal layar di bawah md (mobile/tablet portrait) */
             .info-box {
                 margin-bottom: 20px; /* Tambah jarak antar box di mobile */
             }
+            /* Menghapus border-start di mobile agar tidak double, kecuali yang pertama */
             .hero-section-detail .col-md-6:last-child .info-box {
-                 border-left-color: var(--bs-primary) !important; /* Samakan border di mobile */
+                 border-left-color: var(--bs-success) !important; /* Gunakan warna border yang sesuai */
             }
             .hero-section-detail .col-md-6:last-child .text-success {
-                color: var(--bs-primary) !important; /* Samakan warna judul di mobile */
+                color: var(--bs-success) !important; /* Pertahankan warna judul (hijau) */
             }
+            /* **Fokus Perbaikan Geser:** Memaksa padding agar tidak terlalu mepet pada elemen .table-responsive */
             .table-responsive {
-                 /* Memastikan padding tabel tidak terlalu sempit */
+                 /* Hanya untuk memastikan area geser punya ruang */
                  margin-left: -5px;
                  margin-right: -5px;
+                 padding-left: 5px;
+                 padding-right: 5px;
+                 overflow-x: auto; /* Memastikan sifat geser aktif */
+                 -webkit-overflow-scrolling: touch; /* Untuk iOS smooth scrolling */
             }
             .table {
                 font-size: 0.9rem; /* Perkecil font tabel */
+                /* Opsional: Tentukan lebar minimum agar tabel pasti bisa digeser */
+                min-width: 500px; 
             }
             .py-3.fs-5 {
                 font-size: 1.2rem !important; /* Jaga agar Grand Total tetap menonjol */
@@ -249,6 +256,13 @@ $payment_proof_url = 'uploads/payments/' . urlencode($order['payment_proof_path'
                 font-size: 1rem;
                 padding: 0.5rem 1rem;
             }
+            
+            /* Penyesuaian Kolom Tabel di Mobile */
+            .table th, .table td {
+                padding: 0.5rem;
+            }
+            .table thead th:nth-child(2) { width: 15%; } /* Qty lebih lebar sedikit */
+            .table thead th:nth-child(3), .table thead th:nth-child(4) { width: 30%; } /* Harga/Subtotal lebih lebar */
         }
 
         @media print {
@@ -266,6 +280,7 @@ $payment_proof_url = 'uploads/payments/' . urlencode($order['payment_proof_path'
             }
             .info-box {
                 border-left: none;
+                background-color: transparent;
             }
             /* Print Layout */
             .hero-section-detail .col-md-6 {
@@ -280,6 +295,13 @@ $payment_proof_url = 'uploads/payments/' . urlencode($order['payment_proof_path'
                 content: "";
                 display: table;
                 clear: both;
+            }
+            /* Pastikan tabel tidak terpotong saat print */
+            .table-responsive {
+                 overflow-x: visible !important;
+            }
+            .table {
+                 min-width: 100% !important;
             }
         }
     </style>
@@ -414,7 +436,7 @@ $payment_proof_url = 'uploads/payments/' . urlencode($order['payment_proof_path'
                     <?php endif; ?>
                     
                     <h6 class="mt-5 mb-3 border-bottom pb-2 text-primary"><i class="fas fa-list-ul me-1"></i> Item Pesanan:</h6>
-                    <div class="table-responsive">
+                    <div class="table-responsive"> 
                         <table class="table table-bordered table-hover">
                             <thead>
                                 <tr class="bg-light">
@@ -508,7 +530,7 @@ $payment_proof_url = 'uploads/payments/' . urlencode($order['payment_proof_path'
         const copyElement = document.querySelector('.copy-nr');
         if (copyElement) {
             copyElement.addEventListener('click', function() {
-                // Hapus spasi dan strip dari nomor rekening, kecuali karakter '-' yang mungkin bagian dari nomor rekening yang valid
+                // Hapus spasi dan strip yang tidak perlu dari nomor rekening, hanya menyisakan angka dan '-' yang valid
                 const accountNumber = this.textContent.replace(/[^\d-]/g, '').trim();
                 navigator.clipboard.writeText(accountNumber).then(() => {
                     // Beri feedback visual
