@@ -1,11 +1,7 @@
 <?php
 /**
  * orders_user.php
- * Halaman frontend untuk melihat daftar dan status pesanan yang telah dibuat user.
- * * PERBAIKAN STYLING: Tampilan tabel lebih modern, penggunaan ikon Bootstrap Icons (sebagai pengganti Feather Icons)
- * untuk aksi tombol, dan warna netral yang lebih elegan.
- * * PERBAIKAN RESPONSIVITAS: Menggunakan media query dan penyesuaian markup untuk tampilan mobile/tablet (tabel berubah menjadi list/card).
- * * PENAMBAHAN: Tombol Hapus Riwayat Pesanan Selesai/Dibatalkan.
+ * Halaman frontend untuk melihat daftar dan status pesanan.
  */
 
 if (session_status() == PHP_SESSION_NONE) {
@@ -37,23 +33,22 @@ if (isset($_SESSION['toast_message'])) {
     unset($_SESSION['toast_type']);
 }
 
-
 // Fungsi untuk Formatting ID
 function format_order_id($id) {
     return '#ORD-' . str_pad($id, 6, '0', STR_PAD_LEFT);
 }
 
-// Helper untuk status badge (Diperbarui dengan warna yang lebih solid dan konsisten)
+// Helper untuk status badge
 $status_classes = [
     'pending' => 'secondary',        // Menunggu Pembayaran (Non-COD)
-    'processing' => 'primary',       // Siap Diproses/Dikemas (COD atau Non-COD terverifikasi)
+    'processing' => 'primary',       // Siap Diproses
     'dikirim' => 'info',             // Sedang dalam Pengiriman
     'selesai' => 'success',          // Pesanan Selesai
     'dibatalkan' => 'danger',        // Dibatalkan
     'payment_sent' => 'warning'      // Bukti Pembayaran Terkirim
 ];
 
-// Helper untuk Kurir (agar tampilan lebih ramah)
+// Helper untuk Kurir
 $shipping_carriers_display = [
     'JNE' => 'JNE',
     'TIKI' => 'TIKI',
@@ -64,7 +59,7 @@ $shipping_carriers_display = [
 
 
 if ($koneksi) {
-    // Ambil semua pesanan user ini, diurutkan dari yang terbaru
+    // Ambil semua pesanan user ini, urutkan dari yang terbaru
     $sql = "SELECT id, total_amount, payment_method, shipping_carrier, order_date, status 
              FROM orders 
              WHERE user_id = ? 
@@ -78,7 +73,7 @@ if ($koneksi) {
     if ($result) {
         $orders = $result->fetch_all(MYSQLI_ASSOC);
         
-        // Cek apakah ada pesanan yang bisa dihapus (selesai atau dibatalkan)
+        // Cek apakah ada pesanan yang bisa dihapus riwayatnya
         foreach ($orders as $order) {
             $status = strtolower($order['status']);
             if ($status === 'selesai' || $status === 'dibatalkan') {
@@ -110,28 +105,27 @@ if ($koneksi) {
             margin-right: 15px;
         }
 
-        /* CARD Header Kustom - Lebih Netral dan Profesional */
+        /* CARD Header Kustom */
         .card-header-custom {
-            background-color: #343a40; /* Dark gray solid */
+            background-color: #343a40; 
             color: white;
             padding: 1rem 1.5rem;
-            border-bottom: 3px solid #0d6efd; /* Border biru untuk aksen */
-            border-top-left-radius: 0.5rem !important; /* Sesuaikan dengan card border */
+            border-bottom: 3px solid #0d6efd; 
+            border-top-left-radius: 0.5rem !important; 
             border-top-right-radius: 0.5rem !important;
-            /* 🔥 Tambahan: Flex untuk menempatkan tombol di header */
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         .card-header-custom h4 {
-            font-weight: 700; /* Lebih tegas */
-            margin-bottom: 0; /* Pastikan tidak ada margin bawah pada h4 */
+            font-weight: 700; 
+            margin-bottom: 0; 
         }
         
-        /* TABLE Styling - Lebih Bersih */
+        /* TABLE Styling */
         .table thead th {
-            background-color: #f8f9fa; /* Light gray */
-            color: #495057; /* Dark text */
+            background-color: #f8f9fa; 
+            color: #495057; 
             border-bottom: 2px solid #dee2e6;
             border-top: none;
             font-weight: 600; 
@@ -139,35 +133,31 @@ if ($koneksi) {
             vertical-align: middle;
         }
         .table-hover tbody tr:hover {
-            background-color: #e9ecef; /* Hover yang lebih jelas */
+            background-color: #e9ecef; 
         }
         .table-striped tbody tr:nth-of-type(odd) {
-            background-color: #fbfbfb; /* Sangat subtle */
+            background-color: #fbfbfb; 
         }
         .table td {
-            padding: 1rem 0.75rem; /* Padding lebih besar */
+            padding: 1rem 0.75rem; 
         }
 
-        /* Warna teks ID pesanan dan Total */
         .text-order-id {
-            color: #0d6efd; /* Primary Blue */
+            color: #0d6efd; 
             font-size: 1.05rem;
         }
         .text-total-amount {
-            color: #dc3545; /* Danger Red */
+            color: #dc3545; 
             font-size: 1.1rem;
         }
-        /* Styling Badge Status */
         .badge {
-            font-size: 0.85em; /* Badge sedikit lebih kecil */
+            font-size: 0.85em; 
             font-weight: 700;
             padding: 0.6em 0.9em;
             letter-spacing: 0.5px;
         }
 
-        /* ************************************** */
-        /* PERBAIKAN RESPONSIVITAS (Mobile/Tablet) */
-        /* ************************************** */
+        /* RESPONSIVITAS (Mobile/Tablet) */
         @media (max-width: 767.98px) {
             .container {
                 padding-left: 0.5rem;
@@ -179,25 +169,21 @@ if ($koneksi) {
             }
             .card-header-custom {
                 padding: 0.75rem 1rem;
-                /* 🔥 Penyesuaian: Tombol hapus mungkin turun ke baris baru */
                 flex-direction: column; 
                 align-items: flex-start;
             }
             .card-header-custom h4 {
                 font-size: 1.25rem;
             }
-            /* 🔥 Tambahan: Gaya tombol hapus di mobile */
             .btn-delete-mobile {
                 margin-top: 0.75rem;
                 width: 100%;
             }
-            /* Menyembunyikan thead dan membuat baris tabel menjadi list item */
             .table thead {
                 display: none;
             }
-            /* Styling untuk mode card/list */
             .order-item-mobile {
-                display: block; /* Tampilkan elemen khusus mobile */
+                display: block; 
                 border: 1px solid #dee2e6;
                 margin-bottom: 1rem;
                 padding: 0.75rem;
@@ -249,7 +235,7 @@ if ($koneksi) {
 
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
     <div class="container">
-        <a class="navbar-brand fw-bold text-dark" href="toko_sepatu.php">TokoOnlineku</a>
+        <a class="navbar-brand fw-bold text-dark" href="toko_sepatu.php"></a>
         <a class="btn btn-sm btn-outline-secondary ms-auto" href="toko_sepatu.php"><i class="bi bi-house"></i> Kembali ke Toko</a>
     </div>
 </nav>
@@ -304,7 +290,7 @@ if ($koneksi) {
                                     $formatted_id = format_order_id($row['id']);
                                     $status_key = strtolower($row['status']);
                                     
-                                    // Normalisasi status dari database ke key array
+                                    // Normalisasi status
                                     if ($status_key === 'diproses') {
                                         $status_key = 'processing';
                                     }
@@ -314,7 +300,7 @@ if ($koneksi) {
                                     $carrier_key = strtoupper($row['shipping_carrier'] ?? '');
                                     $display_carrier = $shipping_carriers_display[$carrier_key] ?? $row['shipping_carrier'] ?? '-';
                                     
-                                    // Tampilkan nama status yang lebih user-friendly
+                                    // Tampilkan nama status
                                     $display_status = htmlspecialchars(ucwords($row['status']));
                                     if ($status_key === 'processing') {
                                         $display_status = 'Diproses'; 
@@ -324,7 +310,9 @@ if ($koneksi) {
                                     
                                     $actions_html = '';
 
-                                    // Logika Tombol Aksi
+                                    // ===== LOGIKA TOMBOL AKSI =====
+                                    
+                                    // 1. Pesanan Dikirim -> Tombol Diterima
                                     if ($status_key === 'dikirim') {
                                         $actions_html .= '
                                             <a href="confirm_receipt.php?id=' . $row['id'] . '" 
@@ -332,7 +320,9 @@ if ($koneksi) {
                                                 onclick="return confirm(\'Apakah Anda yakin barang sudah DITERIMA dengan baik? Konfirmasi ini akan menyelesaikan pesanan.\');">
                                                 <i class="bi bi-bag-check"></i> Diterima
                                             </a>';
-                                    } elseif ($status_key === 'pending' && $row['payment_method'] !== 'COD') {
+                                    } 
+                                    // 2. Pending (Bukan COD) -> Bayar & Batalkan
+                                    elseif ($status_key === 'pending' && $row['payment_method'] !== 'COD') {
                                         $actions_html .= '
                                             <a href="payment_upload.php?order_id=' . $row['id'] . '" 
                                                 class="btn btn-sm btn-warning mb-1 w-100 text-dark fw-medium">
@@ -343,11 +333,14 @@ if ($koneksi) {
                                                 onclick="return confirm(\'❗ Anda yakin ingin membatalkan pesanan ini? Aksi ini tidak dapat dibatalkan.\');">
                                                 <i class="bi bi-x-circle"></i> Batalkan
                                             </a>';
-                                    } elseif ($status_key === 'processing' || ($status_key === 'pending' && $row['payment_method'] === 'COD')) {
+                                    } 
+                                    // 3. Processing, COD Pending, ATAU Payment Sent (Menunggu Verifikasi) -> Batalkan
+                                    // Penyesuaian: Menambahkan logic 'payment_sent' agar bisa dibatalkan sesuai backend
+                                    elseif ($status_key === 'processing' || ($status_key === 'pending' && $row['payment_method'] === 'COD') || $status_key === 'payment_sent') {
                                         $actions_html .= '
                                             <a href="cancel_order.php?id=' . $row['id'] . '" 
                                                 class="btn btn-sm btn-outline-danger w-100 fw-medium"
-                                                onclick="return confirm(\'❗ Anda yakin ingin membatalkan pesanan ini? Pesanan sudah diproses dan akan dibatalkan.\');">
+                                                onclick="return confirm(\'❗ Anda yakin ingin membatalkan pesanan ini? Pesanan akan dibatalkan dan stok dikembalikan.\');">
                                                 <i class="bi bi-x-circle"></i> Batalkan
                                             </a>';
                                     }
@@ -390,7 +383,6 @@ if ($koneksi) {
                         $formatted_id = format_order_id($row['id']);
                         $status_key = strtolower($row['status']);
                         
-                        // Normalisasi status dari database ke key array
                         if ($status_key === 'diproses') {
                             $status_key = 'processing';
                         }
@@ -400,7 +392,6 @@ if ($koneksi) {
                         $carrier_key = strtoupper($row['shipping_carrier'] ?? '');
                         $display_carrier = $shipping_carriers_display[$carrier_key] ?? $row['shipping_carrier'] ?? '-';
 
-                        // Tampilkan nama status yang lebih user-friendly
                         $display_status = htmlspecialchars(ucwords($row['status']));
                         if ($status_key === 'processing') {
                             $display_status = 'Diproses'; 
@@ -410,7 +401,7 @@ if ($koneksi) {
                         
                         $actions_html = '';
 
-                        // Logika Tombol Aksi
+                        // Logic Tombol (Mobile) - Sama dengan desktop
                         if ($status_key === 'dikirim') {
                             $actions_html .= '
                                 <a href="confirm_receipt.php?id=' . $row['id'] . '" 
@@ -429,11 +420,11 @@ if ($koneksi) {
                                     onclick="return confirm(\'❗ Anda yakin ingin membatalkan pesanan ini? Aksi ini tidak dapat dibatalkan.\');">
                                     <i class="bi bi-x-circle"></i> Batalkan
                                 </a>';
-                        } elseif ($status_key === 'processing' || ($status_key === 'pending' && $row['payment_method'] === 'COD')) {
+                        } elseif ($status_key === 'processing' || ($status_key === 'pending' && $row['payment_method'] === 'COD') || $status_key === 'payment_sent') {
                             $actions_html .= '
                                 <a href="cancel_order.php?id=' . $row['id'] . '" 
                                     class="btn btn-sm btn-outline-danger w-100 fw-medium"
-                                    onclick="return confirm(\'❗ Anda yakin ingin membatalkan pesanan ini? Pesanan sudah diproses dan akan dibatalkan.\');">
+                                    onclick="return confirm(\'❗ Anda yakin ingin membatalkan pesanan ini? Pesanan akan dibatalkan dan stok dikembalikan.\');">
                                     <i class="bi bi-x-circle"></i> Batalkan
                                 </a>';
                         }
@@ -496,7 +487,6 @@ if ($koneksi) {
 </body>
 </html>
 <?php 
-// Tutup koneksi di akhir skrip
 if (isset($koneksi)) {
     $koneksi->close(); 
 }

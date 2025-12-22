@@ -9,6 +9,21 @@ global $koneksi;
 // Definisikan path assets
 $assets_path = 'assets/';
 
+// --- TAMBAHAN: AMBIL LOGO DARI DATABASE ---
+$site_logo_file = '';
+$logo_uploads_path = 'uploads/brand/'; // Path folder upload logo
+
+// Ambil data logo dari website_settings
+if (isset($koneksi) && $koneksi instanceof mysqli) {
+    $sql_settings = "SELECT logo_image_path FROM website_settings WHERE id = 1";
+    $result_settings = $koneksi->query($sql_settings);
+    if ($result_settings && $result_settings->num_rows > 0) {
+        $row_settings = $result_settings->fetch_assoc();
+        $site_logo_file = htmlspecialchars($row_settings['logo_image_path'] ?? '');
+    }
+}
+// ------------------------------------------
+
 // Inisialisasi variabel email dan flag error Toast
 $email = '';
 $error_message = '';
@@ -160,6 +175,7 @@ if (isset($_SESSION['login_attempt_email'])) {
             width: 100px; /* Ukuran disesuaikan untuk mobile */
             height: 100px; 
             margin-bottom: 15px;
+            object-fit: contain; /* Agar logo tidak terdistorsi */
         }
         .form-control {
             width: 100%; 
@@ -273,7 +289,13 @@ if (isset($_SESSION['login_attempt_email'])) {
 
 <div class="card">
     <div class="card-header">
-        <img src="<?php echo $assets_path; ?>images/logo.png" alt="Toko SepatuKu Logo" class="brand-logo rounded-circle">
+        <?php 
+        // Cek file logo dari database
+        $logo_url = (!empty($site_logo_file) && file_exists($logo_uploads_path . $site_logo_file)) 
+            ? $logo_uploads_path . $site_logo_file 
+            : $assets_path . 'images/logo.png'; // Fallback
+        ?>
+        <img src="<?php echo $logo_url; ?>" alt="Toko Logo" class="brand-logo rounded-circle">
         <h4 class="fw-bold">Login Pelanggan</h4>
         <p class="mb-0 text-muted" style="font-size: 0.9rem;">Masuk untuk melanjutkan belanja Anda.</p>
         

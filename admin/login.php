@@ -48,6 +48,23 @@ require_once $root_path . 'koneksi.php';
 require_once $root_path . 'hash_setup.php'; 
 // ====================================================================
 
+// --- TAMBAHAN: AMBIL LOGO DARI DATABASE ---
+$site_logo_file = '';
+// Path untuk browser (HTML src) - naik satu folder dari admin/
+$logo_html_path = '../uploads/brand/'; 
+// Path untuk server (file_exists) - absolut path
+$logo_server_path = $root_path . 'uploads/brand/';
+
+if (isset($koneksi) && $koneksi instanceof mysqli) {
+    $sql_settings = "SELECT logo_image_path FROM website_settings WHERE id = 1";
+    $result_settings = $koneksi->query($sql_settings);
+    if ($result_settings && $result_settings->num_rows > 0) {
+        $row_settings = $result_settings->fetch_assoc();
+        $site_logo_file = htmlspecialchars($row_settings['logo_image_path'] ?? '');
+    }
+}
+// ------------------------------------------
+
 $error = '';
 $login_attempted = false; 
 
@@ -156,6 +173,7 @@ $show_login_error_toast = $login_attempted && !empty($error);
             width: 50px; /* Ukuran logo */
             height: 50px;
             margin-bottom: 10px;
+            object-fit: contain; /* Agar logo tidak gepeng */
         }
         .card-body {
             padding: 20px 40px 40px 40px !important; 
@@ -261,7 +279,18 @@ $show_login_error_toast = $login_attempted && !empty($error);
             <div class="card">
                 
                 <div class="card-header-modern">
-                    <img src="<?php echo $assets_path; ?>images/logo.png" alt="Logo Toko" class="d-block mx-auto mb-2">
+                    <?php 
+                    $final_logo_url = $assets_path . 'images/logo.png'; // Default fallback
+                    if (!empty($site_logo_file)) {
+                        // Cek apakah file ada di server (menggunakan path absolut server)
+                        if (file_exists($logo_server_path . $site_logo_file)) {
+                            // Jika ada, gunakan path HTML (relative browser)
+                            $final_logo_url = $logo_html_path . $site_logo_file;
+                        }
+                    }
+                    ?>
+                    <img src="<?php echo $final_logo_url; ?>" alt="Logo Toko" class="d-block mx-auto mb-2">
+                    
                     <h4>Sistem Administrasi</h4>
                     <p class="text-muted mb-0" style="font-size: 0.95rem;">Selamat datang kembali, silakan masuk.</p>
                     <link rel="stylesheet" href="<?php echo $assets_path; ?>css/logo.css">

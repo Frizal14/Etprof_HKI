@@ -1,21 +1,16 @@
 <?php
-// admin/settings/kelola_brand/index.php - CRUD Brand Website
+// admin/settings/kelola_brand/index.php - CRUD Brand Website & Logo
 
 // Pastikan Anda memiliki koneksi dan sesi yang diinisialisasi
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
-// Asumsi: koneksi.php sudah ada di root atau path yang bisa dijangkau
-require_once '../koneksi.php'; // Sesuaikan path ini jika perlu
+require_once '../koneksi.php'; 
+global $koneksi; 
 
-// Asumsi: Hanya admin yang bisa akses. Sesuaikan otentikasi Anda.
-// if (!isset($_SESSION['admin_id'])) {
-//     header("Location: ../../login_admin.php"); 
-//     exit;
-// }
-
-$assets_root = '../../../assets/'; 
-$logo_upload_dir = $assets_root . 'images/'; // Path lengkap: ../../../assets/images/
+// --- Path untuk Logo ---
+$logo_upload_root_path = realpath(__DIR__ . '/../../../') . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'brand' . DIRECTORY_SEPARATOR; 
+$logo_upload_dir_display = '../../../uploads/brand/'; 
 
 // Fungsi helper untuk SweetAlert
 function set_swal($icon, $title, $text = '') {
@@ -26,45 +21,41 @@ function set_swal($icon, $title, $text = '') {
 
 // 1. Ambil data pengaturan saat ini (CRUD - Read)
 $settings = [];
-$sql_read = "SELECT id, website_name, tagline, logo_image_path, whatsapp_number FROM website_settings WHERE id = 1";
+// Query TANPA whatsapp_number
+$sql_read = "SELECT id, website_name, tagline, logo_image_path FROM website_settings WHERE id = 1";
 $result = $koneksi->query($sql_read);
 
 if ($result && $result->num_rows > 0) {
     $settings = $result->fetch_assoc();
     $current_logo_path = $settings['logo_image_path'];
 } else {
-    // Jika tidak ada data (pertama kali), buat data default
-    $koneksi->query("INSERT INTO website_settings (id, website_name, tagline, logo_image_path) VALUES (1, 'TokoOnlineku', 'Gaya Setiap Aksi 🛍️', 'logo.png')");
-    // Ambil lagi data yang baru dibuat
-    $result = $koneksi->query($sql_read);
-    $settings = $result->fetch_assoc();
-    $current_logo_path = $settings['logo_image_path'];
+    // Logika fallback jika ada masalah
+    $settings = ['id' => 1, 'website_name' => 'TokoOnlineku', 'tagline' => 'Gaya Setiap Aksi 🛍️', 'logo_image_path' => NULL];
+    $current_logo_path = NULL;
 }
-
-$message_type = ''; // success, danger
 
 // 2. Logika Update (CRUD - Update)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_brand'])) {
     
     $new_name = trim($_POST['website_name']);
     $new_tagline = trim($_POST['tagline']);
-    $new_whatsapp = trim($_POST['whatsapp_number']);
-    $new_logo_name = $current_logo_path; // Default: pertahankan yang lama
+    // whatsapp_number dihapus
+    $new_logo_name = $current_logo_path; 
 
     if (empty($new_name)) {
         set_swal('error', "Gagal!", "Nama website tidak boleh kosong!");
         goto end_post;
     } 
     
-    // --- Logika Hapus Logo (Jika dicentang) ---
+    // --- Logika Hapus Logo ---
     if (isset($_POST['delete_logo']) && $_POST['delete_logo'] == '1') {
-        if (!empty($current_logo_path) && $current_logo_path != 'logo.png') {
-            $old_file = $logo_upload_dir . $current_logo_path;
+        if (!empty($current_logo_path)) {
+            $old_file = $logo_upload_root_path . $current_logo_path;
             if (file_exists($old_file)) {
                 unlink($old_file);
             }
         }
-        $new_logo_name = null; // Set logo ke NULL
+        $new_logo_name = null; 
     }
     
     // --- Logika Upload Logo ---
@@ -72,11 +63,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_brand'])) {
         $file_tmp = $_FILES['logo_image']['tmp_name'];
         $file_name = basename($_FILES['logo_image']['name']);
         $file_extension = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
-        $allowed_extensions = ['jpg', 'jpeg', 'png', 'svg'];
+        $allowed_extensions = ['jpg', 'jpeg', 'png', 'svg', 'webp'];
         $max_file_size = 2 * 1024 * 1024; // 2MB
         
         if (!in_array($file_extension, $allowed_extensions)) {
-            set_swal('error', "Gagal Upload!", "Ekstensi file logo tidak didukung. Gunakan JPG, PNG, atau SVG.");
+            set_swal('error', "Gagal Upload!", "Ekstensi file logo tidak didukung. Gunakan JPG, PNG, SVG, atau WEBP.");
             goto end_post;
         }
         if ($_FILES['logo_image']['size'] > $max_file_size) {
@@ -85,36 +76,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_brand'])) {
         }
         
         $unique_file_name = 'logo_' . time() . '.' . $file_extension;
-        $upload_path = $logo_upload_dir . $unique_file_name;
+        $upload_path = $logo_upload_root_path . $unique_file_name;
 
-        if (!is_dir($logo_upload_dir)) {
-            mkdir($logo_upload_dir, 0777, true);
+        if (!is_dir($logo_upload_root_path)) {
+            mkdir($logo_upload_root_path, 0777, true);
         }
 
         if (move_uploaded_file($file_tmp, $upload_path)) {
-            // Hapus logo lama (kecuali jika logo default 'logo.png' atau jika baru saja dihapus di logika sebelumnya)
-            if (!empty($current_logo_path) && $current_logo_path != 'logo.png' && !isset($_POST['delete_logo'])) {
-                $old_file = $logo_upload_dir . $current_logo_path;
+            if (!empty($current_logo_path) && (!isset($_POST['delete_logo']) || $_POST['delete_logo'] != '1')) {
+                $old_file = $logo_upload_root_path . $current_logo_path;
                 if (file_exists($old_file)) {
                     unlink($old_file);
                 }
             }
             $new_logo_name = $unique_file_name;
         } else {
-            set_swal('error', "Gagal Upload!", "Gagal mengunggah file logo. Periksa izin folder.");
+            set_swal('error', "Gagal Upload!", "Gagal mengunggah file logo. Periksa izin folder 'uploads/brand'.");
             goto end_post;
         }
     }
     
-    // --- SQL Update ---
-    $sql_update = "UPDATE website_settings SET website_name = ?, tagline = ?, logo_image_path = ?, whatsapp_number = ? WHERE id = 1";
+    // --- SQL Update TANPA whatsapp_number ---
+    $sql_update = "UPDATE website_settings SET website_name = ?, tagline = ?, logo_image_path = ? WHERE id = 1";
     $stmt = $koneksi->prepare($sql_update);
     
     if ($stmt) {
-        $stmt->bind_param("ssss", $new_name, $new_tagline, $new_logo_name, $new_whatsapp);
+        // Tipe data: string, string, string
+        $stmt->bind_param("sss", $new_name, $new_tagline, $new_logo_name);
         if ($stmt->execute()) {
             set_swal('success', "Berhasil!", "Pengaturan merek berhasil diperbarui.");
-            // Redirect untuk menghindari resubmission dan memuat data terbaru
             header("Location: " . $_SERVER['PHP_SELF']);
             exit;
         } else {
@@ -128,10 +118,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_brand'])) {
 end_post: 
 
 // 3. Persiapan Tampilan
-// URL gambar logo yang akan ditampilkan di admin
-$display_logo_url = ($settings['logo_image_path'] && file_exists($logo_upload_dir . $settings['logo_image_path'])) 
-                    ? $logo_upload_dir . htmlspecialchars($settings['logo_image_path']) 
-                    : 'https://via.placeholder.com/100x40?text=Logo+Baru';
+$logo_file_exists = !empty($settings['logo_image_path']) && file_exists($logo_upload_root_path . $settings['logo_image_path']);
+
+$display_logo_url = $logo_file_exists
+                    ? $logo_upload_dir_display . htmlspecialchars($settings['logo_image_path']) 
+                    : 'https://via.placeholder.com/100x40?text=Logo+Teks';
 
 ?>
 
@@ -164,14 +155,6 @@ $display_logo_url = ($settings['logo_image_path'] && file_exists($logo_upload_di
                     </div>
                 </div>
             </div>
-
-            <div class="mb-4">
-                <label for="whatsapp_number" class="form-label fw-bold">Nomor WhatsApp (dengan kode negara)</label>
-                <input type="text" class="form-control" id="whatsapp_number" name="whatsapp_number" 
-                       placeholder="Contoh: +6281234567890"
-                       value="<?php echo htmlspecialchars($settings['whatsapp_number'] ?? ''); ?>">
-                <small class="text-muted">Digunakan untuk link WhatsApp di frontend.</small>
-            </div>
             
             <hr>
             
@@ -181,7 +164,7 @@ $display_logo_url = ($settings['logo_image_path'] && file_exists($logo_upload_di
                     <div class="mb-3 p-3 border rounded bg-light d-inline-block">
                         <img src="<?php echo $display_logo_url; ?>" alt="Logo Saat Ini" style="max-height: 50px;">
                         <span class="text-muted ms-3 small">
-                            (File: <?php echo htmlspecialchars($settings['logo_image_path'] ?? 'Tidak Ada/Default'); ?>)
+                            (File: <?php echo htmlspecialchars($settings['logo_image_path'] ?? 'Tidak Ada'); ?>)
                         </span>
                     </div>
                 </div>
@@ -189,15 +172,15 @@ $display_logo_url = ($settings['logo_image_path'] && file_exists($logo_upload_di
 
             <div class="mb-3">
                 <label for="logo_image" class="form-label">Upload Logo Baru (Opsional)</label>
-                <input type="file" class="form-control" id="logo_image" name="logo_image" accept="image/jpeg,image/png,image/svg+xml">
-                <small class="text-muted">Maksimal 2MB. Format: JPG, PNG, atau SVG disarankan.</small>
+                <input type="file" class="form-control" id="logo_image" name="logo_image" accept="image/jpeg,image/png,image/svg+xml,image/webp">
+                <small class="text-muted">Maksimal 2MB. Format: JPG, PNG, SVG, atau WEBP disarankan.</small>
             </div>
             
-            <?php if (!empty($settings['logo_image_path']) && $settings['logo_image_path'] != 'logo.png'): // Izinkan hapus jika bukan logo default ?>
+            <?php if (!empty($settings['logo_image_path'])): ?>
             <div class="form-check mb-4">
                 <input class="form-check-input" type="checkbox" value="1" id="delete_logo" name="delete_logo">
                 <label class="form-check-label text-danger" for="delete_logo">
-                    <i class="fas fa-trash me-1"></i> Hapus Logo Saat Ini (Akan menggunakan logo default teks jika tidak ada upload baru)
+                    <i class="fas fa-trash me-1"></i> Hapus Logo Saat Ini
                 </label>
             </div>
             <?php endif; ?>
@@ -207,7 +190,10 @@ $display_logo_url = ($settings['logo_image_path'] && file_exists($logo_upload_di
     </div>
 </div>
 
-<?php if (isset($_SESSION['swal_title'])): ?>
+<?php 
+// SweetAlert Display Logic
+if (isset($_SESSION['swal_title'])): ?>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         Swal.fire({

@@ -4,7 +4,7 @@ if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-//  MENONAKTIFKAN CACHE RIWAYAT PERAMBAN 🔥
+//  MENONAKTIFKAN CACHE RIWAYAT PERAMBAN 🔥
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
@@ -13,10 +13,33 @@ header("Pragma: no-cache");
 $is_logged_in = isset($_SESSION['user_id']);
 
 require_once 'koneksi.php'; // Ambil koneksi database
+global $koneksi; // Pastikan koneksi global di sini
+
+// 🔥 START: AMBIL PENGATURAN WEBSITE (BRAND) 🔥
+$website_settings = [];
+$sql_settings = "SELECT website_name, tagline, logo_image_path FROM website_settings WHERE id = 1"; 
+$result_settings = $koneksi->query($sql_settings);
+
+if ($result_settings && $result_settings->num_rows > 0) {
+    $website_settings = $result_settings->fetch_assoc();
+} else {
+    // Default jika tabel kosong
+    $website_settings = [
+        'website_name' => 'TokoOnlineku', 
+        'tagline' => 'Gaya Setiap Aksi 🛍️',
+        'logo_image_path' => null 
+    ];
+}
+
+$site_name = htmlspecialchars($website_settings['website_name'] ?? 'TokoOnlineku');
+$site_tagline = htmlspecialchars($website_settings['tagline'] ?? 'Gaya Setiap Aksi 🛍️');
+$site_logo_file = htmlspecialchars($website_settings['logo_image_path'] ?? ''); // Nama file logo
+// 🔥 END: AMBIL PENGATURAN WEBSITE (BRAND) 🔥
 
 $uploads_url_path = 'uploads/product_images/'; 
 $assets_path = 'assets/'; // Path baru untuk assets
 $profile_upload_path = 'uploads/user_profiles/'; // Path untuk foto user
+$logo_uploads_url_path = 'uploads/brand/'; // Path baru untuk logo brand
 
 $products = [];
 $categories = [];
@@ -239,7 +262,7 @@ $full_profile_path = (!empty($user_profile_img) && file_exists($profile_upload_p
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TokoOnlineku | Gaya Setiap Aksi 🛍️</title> 
+    <title><?php echo $site_name; ?></title> 
     <link rel="stylesheet" href="<?php echo $assets_path; ?>css/gaya.css?v=<?php echo time(); ?>"> 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> 
@@ -366,10 +389,6 @@ $full_profile_path = (!empty($user_profile_img) && file_exists($profile_upload_p
             transform: scale(1.1);
             text-shadow: 0 0 10px rgba(13, 110, 253, 0.5); 
         }
-        .whatsapp-icon:hover {
-            color: #25D366 !important; 
-            text-shadow: 0 0 10px rgba(37, 211, 102, 0.8);
-        }
 
 
         /* ================================================= */
@@ -386,16 +405,16 @@ $full_profile_path = (!empty($user_profile_img) && file_exists($profile_upload_p
             
             /* 2. LOGO BRAND - Membuat nama brand lebih kecil agar muat */
             .brand-logo-container .brand-name {
-                font-size: 0.70rem; /* Dibuat lebih kecil */
+                font-size: 0.9rem; /* Sedikit diperbesar karena slogan hilang */
             }
             
-            /* Sembunyikan tagline di mobile */
+            /* Sembunyikan tagline di mobile (redundant sekarang karena di php sudah dihapus, tapi untuk jaga-jaga) */
             .brand-logo-container .brand-tagline {
                 display: none !important; 
             }
             
             .brand-logo-container > div {
-                max-width: 80px; 
+                max-width: 150px; 
                 overflow: hidden; 
                 text-overflow: clip; 
                 white-space: nowrap; 
@@ -407,18 +426,7 @@ $full_profile_path = (!empty($user_profile_img) && file_exists($profile_upload_p
                 margin-left: auto; 
             }
 
-            /* 4. HEADER/JUMBOTRON - Membuat padding lebih minimalis di mobile */
-            header {
-                padding: 2.5rem 1rem !important;
-            }
-            .display-5 {
-                font-size: 1.75rem !important;
-            }
-            .fs-4 {
-                font-size: 1rem !important;
-            }
-
-            /* 5. FILTER KATEGORI - Rata kiri untuk menghemat ruang jika terlalu banyak kategori */
+            /* 4. FILTER KATEGORI - Rata kiri untuk menghemat ruang jika terlalu banyak kategori */
             .category-filter {
                 text-align: left !important;
                 padding-left: 0.5rem;
@@ -455,13 +463,17 @@ if ($toast_message):
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top navbar-autohide" id="mainNavbar"> 
     <div class="container">
         <a class="navbar-brand brand-logo-container d-flex align-items-center" href="toko_sepatu.php">
-            <img src="<?php echo $assets_path; ?>images/logo.png" alt="TokoOnlineku Logo" class="brand-logo" style="height: 35px;">
+            <?php 
+            // Cek apakah logo dari DB ada di uploads/brand
+            $logo_url = (!empty($site_logo_file) && file_exists($logo_uploads_url_path . $site_logo_file)) 
+                ? $logo_uploads_url_path . $site_logo_file
+                : $assets_path . 'images/logo.png'; // Fallback ke logo default di assets
+            ?>
+            <img src="<?php echo $logo_url; ?>" alt="<?php echo $site_name; ?> Logo" class="brand-logo" style="height: 35px;">
             <div>
-                <span class="brand-name fw-bold ms-2 text-primary">TokoOnlineku</span>
-                <small class="brand-tagline d-block text-muted ms-2" style="font-size: 0.75em;">Gaya Setiap Aksi</small>
+                <span class="brand-name fw-bold ms-2 text-primary"><?php echo $site_name; ?></span>
             </div>
         </a>
-        
         <div class="d-flex align-items-center d-lg-none">
 
             <?php if ($is_logged_in): ?>
@@ -485,35 +497,60 @@ if ($toast_message):
                         data-bs-toggle="dropdown" aria-expanded="false" style="text-decoration: none; border: none;">
                     <i class="fas fa-ellipsis-v fs-4 text-dark"></i>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end p-0" aria-labelledby="mobileMenuDropdown">
+                
+                <ul class="dropdown-menu dropdown-menu-end p-0 shadow-lg" aria-labelledby="mobileMenuDropdown" style="border: none; overflow: hidden;">
                     <?php if ($is_logged_in): ?>
                         
-                        <li><span class="dropdown-item d-flex align-items-center fw-bold text-muted border-bottom mb-2 pb-2">
-                            <i class="fas fa-user me-2"></i> <?php echo htmlspecialchars($user_name); ?>
-                        </span></li>
+                        <li class="bg-light p-3 border-bottom">
+                            <span class="d-block fw-bold text-dark"><?php echo htmlspecialchars($user_name); ?></span>
+                            <span class="small text-muted">Selamat Datang!</span>
+                        </li>
                         
-                        <li><a class="dropdown-item text-success fw-bold" href="cart.php">
-                            <i class="fas fa-shopping-cart me-2"></i> Keranjang 
-                            <?php if ($cart_count > 0): ?>
-                                <span class="badge bg-danger ms-1"><?php echo $cart_count; ?></span>
-                            <?php endif; ?>
-                        </a></li>
-                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#userProfileModal"><i class="fas fa-user-edit me-2"></i> Edit Profil</a></li>
-                        <li><a class="dropdown-item" href="orders_user.php"><i class="fas fa-list-alt me-2"></i> Pesanan Anda</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="kontak.php"><i class="fas fa-phone-alt me-2"></i> Kontak</a></li>
-                        <li><a class="dropdown-item" href="about.php"><i class="fas fa-info-circle me-2"></i> Tentang Kami</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger fw-bold" href="logout_user.php" onclick="return confirm('Apakah Anda yakin ingin keluar?');">
-                            <i class="fas fa-sign-out-alt me-2"></i> Logout
-                        </a></li>
+                        <li><h6 class="dropdown-header mt-2 text-uppercase" style="font-size: 0.75rem;">Belanja</h6></li>
+                        <li>
+                            <a class="dropdown-item py-2 d-flex justify-content-between align-items-center" href="cart.php">
+                                <span><i class="fas fa-shopping-cart me-2 text-success"></i> Keranjang</span>
+                                <?php if ($cart_count > 0): ?>
+                                    <span class="badge bg-danger rounded-pill"><?php echo $cart_count; ?></span>
+                                <?php endif; ?>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item py-2" href="orders_user.php">
+                                <i class="fas fa-list-alt me-2 text-primary"></i> Pesanan Saya
+                            </a>
+                        </li>
+
+                        <li><hr class="dropdown-divider my-2"></li>
+
+                        <li><h6 class="dropdown-header text-uppercase" style="font-size: 0.75rem;">Akun</h6></li>
+                        <li>
+                            <a class="dropdown-item py-2" href="#" data-bs-toggle="modal" data-bs-target="#userProfileModal">
+                                <i class="fas fa-user-edit me-2 text-info"></i> Edit Profil
+                            </a>
+                        </li>
+
+                        <li><hr class="dropdown-divider my-2"></li>
+                        
+                        <li><h6 class="dropdown-header text-uppercase" style="font-size: 0.75rem;">Info</h6></li>
+                        <li><a class="dropdown-item py-2" href="kontak.php"><i class="fas fa-phone-alt me-2 text-secondary"></i> Kontak</a></li>
+                        <li><a class="dropdown-item py-2" href="about.php"><i class="fas fa-info-circle me-2 text-secondary"></i> Tentang Kami</a></li>
+                        
+                        <li><hr class="dropdown-divider my-2"></li>
+                        
+                        <li>
+                            <a class="dropdown-item py-3 text-danger fw-bold bg-light" href="logout_user.php" onclick="return confirm('Apakah Anda yakin ingin keluar?');">
+                                <i class="fas fa-sign-out-alt me-2"></i> Keluar
+                            </a>
+                        </li>
+
                     <?php else: ?>
-                        <li><a class="dropdown-item text-primary fw-bold" href="login_user.php">
+                        <li><a class="dropdown-item py-3 text-primary fw-bold" href="login_user.php">
                             <i class="fas fa-sign-in-alt me-2"></i> Login / Daftar
                         </a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="kontak.php"><i class="fas fa-phone-alt me-2"></i> Kontak</a></li>
-                        <li><a class="dropdown-item" href="about.php"><i class="fas fa-info-circle me-2"></i> Tentang Kami</a></li>
+                        <li><a class="dropdown-item py-2" href="kontak.php"><i class="fas fa-phone-alt me-2"></i> Kontak</a></li>
+                        <li><a class="dropdown-item py-2" href="about.php"><i class="fas fa-info-circle me-2"></i> Tentang Kami</a></li>
                     <?php endif; ?>
                 </ul>
             </div>
@@ -602,13 +639,7 @@ if ($toast_message):
         </div>
 </nav>
 
-<header class="p-5 text-center bg-white border-bottom mb-5 shadow-sm">
-    <div class="container">
-        <h1 class="display-5 fw-bold text-dark">Lengkapi Gaya, Mulai Aksi.</h1>
-        <p class="fs-4 text-muted">Temukan koleksi fashion, aksesori, dan perlengkapan terbaik untuk setiap petualangan Anda.</p>
-    </div>
-</header>
-<div class="container" id="produk-list">
+<div class="container mt-5 pt-4" id="produk-list">
     <h2 class="mb-4 text-center fw-bold text-dark-emphasis">Koleksi Produk 
         <?php 
         $current_category_name = "Terbaru";
@@ -846,38 +877,33 @@ if ($toast_message):
 <?php endif; ?>
 
 <div class="modal fade" id="productDetailModal" tabindex="-1" aria-labelledby="productDetailModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="productDetailModalLabel">Detail Produk Cepat</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body" id="modal-detail-content">
-        <div class="text-center">
-            <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
-            <p class="mt-2">Memuat detail...</p>
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="productDetailModalLabel">Detail Produk Cepat</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modal-detail-content">
+                <div class="text-center">
+                    <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                    <p class="mt-2">Memuat detail...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a id="modal-link-full-detail" href="#" class="btn btn-outline-secondary">Lihat Halaman Detail Penuh</a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            </div>
         </div>
-      </div>
-      <div class="modal-footer">
-        <a id="modal-link-full-detail" href="#" class="btn btn-outline-secondary">Lihat Halaman Detail Penuh</a>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-      </div>
     </div>
-  </div>
 </div>
-
-<?php
-$whatsapp_number = '+6281234567890'; 
-$whatsapp_link = 'https://wa.me/' . preg_replace('/[^0-9]/', '', $whatsapp_number);
-?>
 
 <footer class="bg-dark text-white pt-5 pb-3 mt-5"> 
     <div class="container">
         <div class="row">
             
             <div class="col-md-4 mb-4">
-                <h5 class="fw-bold text-uppercase text-primary mb-3">TokoOnlineku</h5>
-                <p class="small text-white-50">Gaya Setiap Aksi. Kami berkomitmen menyediakan koleksi sepatu dan perlengkapan terbaik dengan kualitas yang terjamin.</p>
+                <h5 class="fw-bold text-uppercase mb-3" style="color: #0d6efd;"><?php echo $site_name; ?></h5>
+                <p class="small text-white-50"><?php echo $site_tagline; ?>. Kami berkomitmen menyediakan produk dan perlengkapan terbaik dengan kualitas yang terjamin.</p>
                 <a href="about.php" class="btn btn-sm btn-outline-light mt-2">Tentang Kami</a>
             </div>
 
@@ -885,43 +911,33 @@ $whatsapp_link = 'https://wa.me/' . preg_replace('/[^0-9]/', '', $whatsapp_numbe
                 <h5 class="fw-bold text-uppercase mb-3">Tautan Cepat</h5>
                 <ul class="list-unstyled">
                     <li class="mb-2"><a href="toko_sepatu.php" class="text-white-50 text-decoration-none footer-link">Beranda</a></li>
+                    
                     <?php if ($is_logged_in): ?>
                     <li class="mb-2"><a href="orders_user.php" class="text-white-50 text-decoration-none footer-link">Pesanan Saya</a></li>
                     <li class="mb-2"><a href="cart.php" class="text-white-50 text-decoration-none footer-link">Keranjang Belanja</a></li>
                     <?php else: ?>
                     <li class="mb-2"><a href="login_user.php" class="text-white-50 text-decoration-none footer-link">Login/Daftar</a></li>
                     <?php endif; ?>
+                    
                     <li class="mb-2"><a href="about.php" class="text-white-50 text-decoration-none footer-link">Pusat Bantuan</a></li>
                 </ul>
             </div>
 
             <div class="col-md-4 mb-4">
-                <h5 class="fw-bold text-uppercase mb-3">Ikuti Kami & Kontak</h5>
-                <div class="social-links mb-4"> 
-                    
-                    <a href="<?php echo $whatsapp_link; ?>" class="text-white-50 me-3 social-icon whatsapp-icon" target="_blank" title="WhatsApp">
-                        <i class="fab fa-whatsapp fa-lg"></i>
-                    </a>
-                    
-                    <a href="#" class="text-white-50 me-3 social-icon" target="_blank" title="Facebook">
-                        <i class="fab fa-facebook-f fa-lg"></i>
-                    </a>
-                    <a href="#" class="text-white-50 me-3 social-icon" target="_blank" title="Instagram">
-                        <i class="fab fa-instagram fa-lg"></i>
-                    </a>
-                    <a href="#" class="text-white-50 social-icon" target="_blank" title="Twitter/X">
-                        <i class="fab fa-twitter fa-lg"></i>
-                    </a>
-                </div>
-                <p class="small text-primary mt-4">Hubungi kami: support@toko-onlineku.com</p>
-                <p class="small text-white-50">WA: <?php echo $whatsapp_number; ?></p>
+                <h5 class="fw-bold text-uppercase mb-3">Layanan Pelanggan</h5>
+                <p class="small text-white-50 mb-3">Punya pertanyaan seputar produk atau pesanan Anda? Tim kami siap membantu.</p>
+                
+                <a href="kontak.php" class="btn text-white fw-bold" style="background-color: #0d6efd; border-color: #0d6efd;">
+                    <i class="fas fa-envelope me-2"></i> Hubungi Kami
+                </a>
             </div>
+
         </div>
         
         <hr class="my-4 border-secondary">
 
         <div class="text-center">
-            <p class="mb-1 text-white-50">&copy; <?php echo date('Y'); ?> TokoOnlineku. Hak Cipta Dilindungi.</p>
+            <p class="mb-1 text-white-50">&copy; <?php echo date('Y'); ?> <?php echo $site_name; ?>. Hak Cipta Dilindungi.</p>
             <p class="small text-muted">Dibuat dengan semangat untuk gaya dan kenyamanan Anda.</p>
         </div>
         
@@ -964,19 +980,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ==========================================================
     // 🔥 LOGIKA PEMICU SWEET ALERT DARI SESI PHP 🔥
-    // (Misalnya: Login Sukses dari login_user.php atau Register Sukses dari register.php)
     // ==========================================================
     const sessionSwalTitle = "<?= htmlspecialchars($session_swal_title) ?>";
     const sessionSwalText = "<?= htmlspecialchars($session_swal_text) ?>";
     const sessionSwalIcon = "<?= htmlspecialchars($session_swal_icon) ?>"; 
 
     if (sessionSwalTitle && sessionSwalIcon) {
-         showSweetAlert(
-             sessionSwalIcon, 
-             sessionSwalTitle, 
-             sessionSwalText,
-             4000 
-         );
+          showSweetAlert(
+              sessionSwalIcon, 
+              sessionSwalTitle, 
+              sessionSwalText,
+              4000 
+          );
     }
     // ==========================================================
 

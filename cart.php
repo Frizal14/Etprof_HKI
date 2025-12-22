@@ -307,7 +307,7 @@ if ($toast_message):
 
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
     <div class="container cart-container">
-        <a class="navbar-brand fw-bold text-primary" href="toko_sepatu.php"><i class="bi bi-shop me-2"></i>TokoOnlineku</a>
+        <a class="navbar-brand fw-bold text-primary" href="toko_sepatu.php"><i class="bi bi-shop me-2"></i></a>
         <a class="btn btn-outline-secondary" href="toko_sepatu.php">
              <i class="bi bi-arrow-left-short me-1"></i> Lanjut Belanja
         </a>

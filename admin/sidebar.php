@@ -30,6 +30,8 @@ $store_segments = ['products/', 'orders/', 'categories/'];
 $user_segments = ['administrator_management/', 'user_management/'];
 // 🔥 Tambahkan segment untuk Kelola About
 $about_segment = 'settings/kelola_about/'; 
+// 🔥 BARU: Tambahkan segment untuk Kelola Brand
+$brand_segment = 'settings/kelola_brand/'; 
 
 
 $store_is_expanded = is_expanded($store_segments, $current_page);
@@ -37,6 +39,8 @@ $user_is_expanded = is_expanded($user_segments, $current_page);
 
 // 🔥 Definisikan status aktif untuk Kelola About
 $about_is_active = is_active($about_segment, $current_page);
+// 🔥 BARU: Definisikan status aktif untuk Kelola Brand
+$brand_is_active = is_active($brand_segment, $current_page); 
 ?>
 
 <style>
@@ -187,7 +191,11 @@ $about_is_active = is_active($about_segment, $current_page);
                 <i data-feather="book-open" class="me-2 feather"></i> Kelola Halaman About
             </a>
 
-        </div>
+            <a class="nav-link <?= $brand_is_active; ?>"
+                href="<?= $router_path; ?>?page=settings/kelola_brand/index">
+                <i data-feather="gift" class="me-2 feather"></i> Kelola Brand & Logo
+            </a>
+            </div>
 
         <div class="sidebar-footer p-3 border-top text-center">
             <a class="btn btn-danger btn-sm w-100" href="logout.php"
@@ -204,18 +212,32 @@ $about_is_active = is_active($about_segment, $current_page);
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    feather.replace();
+    // Memastikan feather.replace() hanya dipanggil sekali
+    if (typeof feather !== 'undefined') {
+        feather.replace();
+    } else {
+        console.error("Feather Icons library not loaded.");
+    }
+
 
     document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(function (el) {
         el.addEventListener("click", function () {
             let indicator = el.querySelector(".dropdown-indicator");
+            // Menggunakan event Bootstrap yang lebih tepat
+            let targetId = el.getAttribute('href');
+            let targetCollapse = document.querySelector(targetId);
+
+            // Handle collapse logic manually if needed, or rely on Bootstrap's collapse.
+            // Timeout untuk memastikan ikon berputar setelah Bootstrap menyelesaikan transisi
             setTimeout(() => {
-                if (el.getAttribute("aria-expanded") === "true") {
+                if (targetCollapse.classList.contains('show')) {
                     indicator.classList.add("rotate");
                 } else {
                     indicator.classList.remove("rotate");
                 }
-                feather.replace();
+                if (typeof feather !== 'undefined') {
+                    feather.replace();
+                }
             }, 150);
         });
     });

@@ -369,7 +369,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
     <div class="container checkout-container">
-        <a class="navbar-brand fw-bold text-success" href="toko_sepatu.php">TokoOnlineku</a>
+        <a class="navbar-brand fw-bold text-success" href="toko_sepatu.php"></a>
         <a class="btn btn-sm btn-outline-secondary" href="cart.php">
             <i class="fas fa-arrow-left me-1"></i> Kembali ke Keranjang
         </a>

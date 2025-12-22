@@ -241,7 +241,7 @@ if ($result->num_rows > 0) {
 
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="toko_sepatu.php">TokoOnlineku</a>
+        <a class="navbar-brand fw-bold" href="toko_sepatu.php"></a>
         
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#detailNavbar" aria-controls="detailNavbar" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>

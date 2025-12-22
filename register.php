@@ -10,6 +10,21 @@ $assets_path = 'assets/';
 require_once 'koneksi.php'; 
 global $koneksi;
 
+// --- TAMBAHAN: AMBIL LOGO DARI DATABASE ---
+$site_logo_file = '';
+$logo_uploads_path = 'uploads/brand/'; // Path folder upload logo
+
+// Ambil data logo dari website_settings
+if (isset($koneksi) && $koneksi instanceof mysqli) {
+    $sql_settings = "SELECT logo_image_path FROM website_settings WHERE id = 1";
+    $result_settings = $koneksi->query($sql_settings);
+    if ($result_settings && $result_settings->num_rows > 0) {
+        $row_settings = $result_settings->fetch_assoc();
+        $site_logo_file = htmlspecialchars($row_settings['logo_image_path'] ?? '');
+    }
+}
+// ------------------------------------------
+
 $error = []; 
 $name = $email = ''; 
 
@@ -48,10 +63,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Hash password
             $password_hash = password_hash($password, PASSWORD_DEFAULT);
-            // $role = 'user'; <-- BARIS INI DIHAPUS
-
+            
             // Simpan ke database (tabel users)
-            // 🔥 MODIFIKASI: Menghapus 'role' dari daftar field dan bind_param
             $stmt_insert = $koneksi->prepare("INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)");
             $stmt_insert->bind_param("sss", $name, $email, $password_hash); 
 
@@ -128,6 +141,7 @@ if (!empty($error)) {
             width: 80px; 
             height: 80px; 
             margin-bottom: 5px; 
+            object-fit: contain; /* Agar logo tidak gepeng */
         }
         .card-body {
             padding: 20px; 
@@ -213,7 +227,13 @@ if (!empty($error)) {
 
 <div class="card">
     <div class="card-header">
-        <img src="<?php echo $assets_path; ?>images/logo.png" alt="Toko SepatuKu Logo" class="brand-logo rounded-circle"> 
+        <?php 
+        // Cek file logo dari database
+        $logo_url = (!empty($site_logo_file) && file_exists($logo_uploads_path . $site_logo_file)) 
+            ? $logo_uploads_path . $site_logo_file 
+            : $assets_path . 'images/logo.png'; // Fallback
+        ?>
+        <img src="<?php echo $logo_url; ?>" alt="Toko Logo" class="brand-logo rounded-circle"> 
         <h5 class="fw-bold mb-1">Buat Akun Baru</h5>
         <p class="mb-0 text-muted" style="font-size: 0.9rem;">Daftar untuk mulai berbelanja.</p>
         

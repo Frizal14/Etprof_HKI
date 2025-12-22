@@ -326,7 +326,7 @@ $payment_proof_url = 'uploads/payments/' . urlencode($order['payment_proof_path'
 
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm no-print">
     <div class="container">
-        <a class="navbar-brand text-primary fw-bold" href="toko_sepatu.php">Toko SepatuKu</a>
+        <a class="navbar-brand text-primary fw-bold" href="toko_sepatu.php"></a>
         <a class="btn btn-sm btn-outline-secondary ms-auto d-none d-sm-inline-block" href="orders_user.php"><i class="fas fa-arrow-left me-1"></i> Kembali ke Daftar Pesanan</a>
         <a class="btn btn-sm btn-outline-secondary ms-auto d-sm-none" href="orders_user.php"><i class="fas fa-arrow-left"></i></a>
     </div>
