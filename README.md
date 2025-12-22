@@ -118,7 +118,7 @@ Clone Repositori atau Download ZIP:
 
 
 ```text
-git clone https://github.com/Frizal14/Etprof\_HKI.git](https://github.com/Frizal14/Etprof\_HKI.git
+git clone https://github.com/Frizal14/Etprof_HKI.git
 ```
 
 
