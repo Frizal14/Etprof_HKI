@@ -117,8 +117,9 @@ MySQL/MariaDB
 Clone Repositori atau Download ZIP:
 
 
-
-git clone \[https://github.com/Frizal14/Etprof\_HKI.git](https://github.com/Frizal14/Etprof\_HKI.git)
+```text
+git clone https://github.com/Frizal14/Etprof\_HKI.git](https://github.com/Frizal14/Etprof\_HKI.git
+```
 
 
 
